@@ -103,9 +103,13 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
-extern int sys_exitStatus(void); //cs153_lab1
-extern int sys_waitStatus(void); //cs153_lab1
-extern int sys_waitpid(void); //cs153_lab1
+extern int sys_exitStatus(void);  //cs153_lab1
+extern int sys_waitStatus(void);  //cs153_lab1
+extern int sys_waitpid(void);     //cs153_lab1
+extern int sys_getPrior(void);    //lab2
+extern int sys_setPrior(void);    //lab2
+extern int sys_getWaitTime(void); //lab2
+extern int sys_getTurnTime(void); //lab2
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,9 +133,13 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_exitStatus] sys_exitStatus, /*cs153_lab1*/
-[SYS_waitStatus] sys_waitStatus, /*cs153_lab1*/
-[SYS_waitpid]	 sys_waitpid,	 /*cs153_lab1*/
+[SYS_exitStatus] sys_exitStatus,    /*cs153_lab1*/
+[SYS_waitStatus] sys_waitStatus,    /*cs153_lab1*/
+[SYS_waitpid]	 sys_waitpid,	        /*cs153_lab1*/
+[SYS_getPrior]  sys_getPrior,       //lab2
+[SYS_setPrior]  sys_setPrior,       //lab2
+[SYS_getWaitTime] sys_getWaitTime,  //lab2
+[SYS_getTurnTime] sys_getTurnTime,  //lab2
 };
 
 void

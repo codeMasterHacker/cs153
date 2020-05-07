@@ -37,12 +37,13 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 // Per-process state
 struct proc 
 {
-  int exitStatus;		//save an exit status for the terminated process; cs153_lab1
+  int exitStatus;		           //save an exit status for the terminated process; cs153_lab1
+  int priority;                //priority of proceess range(0,31) low = High and high = Low priority
   uint sz;                     // Size of process memory (bytes)
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state
-  int pid;                     // Process ID
+  int pid;                     // Process ID 
   struct proc *parent;         // Parent process
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
@@ -51,6 +52,9 @@ struct proc
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int prior_val;                // lab2 gives the process a priority value
+  int waitTime;                 // lab2 current process wait time
+  int turnTime;                 // lab2 process turn around time
 };
 
 // Process memory is laid out contiguously, low addresses first:

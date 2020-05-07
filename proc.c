@@ -476,7 +476,28 @@ int waitpid(int pid, int* status, int options)
     sleep(curproc, &ptable.lock); //DOC: wait-sleep
   }
 }
+//--------------lab2 Start-------------------
+int getPrior(void)
+{
+    return myproc()->prior_val;
+}
 
+void setPrior(int prior_val)
+{
+    struct proc *curproc = myproc();
+    curproc->prior_val = prior_val;
+}
+
+int getWaitTime()
+{
+    return myproc()->waitTime;
+}
+
+int getTurnTime()
+{
+    return myproc()->turnTime;
+}
+//--------------lab2 End-------------------
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
