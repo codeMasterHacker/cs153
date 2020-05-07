@@ -201,6 +201,8 @@ fork(void)
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
+  np->prior_val = curproc->prior_val; //cs153_lab2: not parent (child) inherits parent's (current process) priority value
+
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -487,6 +489,7 @@ void setPrior(int prior_val)
 {
     struct proc *curproc = myproc();
     curproc->prior_val = prior_val;
+    yield(); //give up CPU once priority value changes
 }
 
 int getWaitTime()
@@ -513,31 +516,44 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
-  for(;;){
+
+  int highestPriority = 0; //cs153_lab2: holds the highest priority (lowest int)
+  struct proc* highestPriority_proc = 0; //cs153_lab2: points the process with the highest priority (lowest int)  
+
+  for(;;)
+  {
     // Enable interrupts on this processor.
     sti();
-
-    // Loop over process table looking for process to run.
+    
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+    highestPriority = ptable.proc->prior_val; ////cs153_lab2: initialize the highest priority to the first process' priority
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
+    // Loop over process table looking for the process with the lowest priority
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      //cs153_lab2: if the priority of p is less than or equal to (to make highestPriority_proc piont to the first process) the current highest priority
+      if (p->prior_val <= highestPriority)
+      {
+        highestPriority = p->prior_val; //cs153_lab2: update the current highest priority to p's priority
+        highestPriority_proc = p; //cs153_lab2: p is currently the process with the highest priority
+      }
     }
+
+    // Switch to chosen process.  It is the process's job
+    // to release ptable.lock and then reacquire it
+    // before jumping back to us.
+    c->proc = highestPriority_proc;
+    switchuvm(highestPriority_proc);
+    highestPriority_proc->state = RUNNING;
+
+    swtch(&(c->scheduler), highestPriority_proc->context);
+    switchkvm();
+
+    // Process is done running for now.
+    // It should have changed its p->state before coming back.
+    c->proc = 0;
+
     release(&ptable.lock);
 
   }
