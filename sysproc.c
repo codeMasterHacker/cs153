@@ -126,3 +126,33 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+//---------lab2------------
+int
+sys_getPrior(void)
+{
+    return getPrior();
+}
+int
+sys_setPrior(void)
+{
+    //when passing in a argument we must use argint
+    int prior_val;
+
+    if(argint(0, &prior_val) < 0){
+        exit1(1); //error caught!
+    }
+    else
+        setPrior(prior_val);
+    return 0;  // not reached
+}
+int
+sys_getWaitTime(void)
+{
+    return getWaitTime();
+}
+int
+sys_getTurnTime(void)
+{
+    return getTurnTime();
+}

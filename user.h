@@ -27,6 +27,11 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 
+void setPrior(int prior_val);   //lab2
+int getPrior(void);             //lab2
+int getWaitTime(void);          //lab2
+int getTurnTime(void);          //lab2
+
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);

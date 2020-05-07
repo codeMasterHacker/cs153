@@ -118,10 +118,14 @@ void            sched(void);
 void            setproc(struct proc*);
 void            sleep(void*, struct spinlock*);
 void            userinit(void);
-int             wait(void); //old wait system call
-int		waitStatus(int* status); //cs153_lab1
+int             wait(void);                         //old wait system call
+int		waitStatus(int* status);                    //cs153_lab1
 int		waitpid(int pid, int* status, int options); //cs153_lab1
-void            wakeup(void*);
+void            setPrior(int prior_val);            //lab2
+int             getPrior(void);                     //lab2
+int             getWaitTime(void);                  //lab2
+int             getTurnTime(void);                  //lab2
+void            wakeup(void*);         
 void            yield(void);
 
 // swtch.S
