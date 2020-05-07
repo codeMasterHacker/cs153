@@ -88,6 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->prior_val = 0; //cs153_lab2: initilaize process priority value to zero
 
   release(&ptable.lock);
 
