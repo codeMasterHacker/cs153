@@ -489,8 +489,7 @@ int getPrior(void)
 
 void setPrior(int prior_val)
 {
-    struct proc *curproc = myproc();
-    curproc->prior_val = prior_val;
+    myproc()->prior_val = prior_val;
     yield(); //give up CPU once priority value changes
 }
 
@@ -545,16 +544,18 @@ scheduler(void)
     // Switch to chosen process.  It is the process's job
     // to release ptable.lock and then reacquire it
     // before jumping back to us.
-    c->proc = highestPriority_proc;
-    switchuvm(highestPriority_proc);
-    highestPriority_proc->state = RUNNING;
+    c->proc = highestPriority_proc; //cs153_lab2: set cpu process to the highest priority process
+    switchuvm(highestPriority_proc); //cs153_lab2: switch to the highest priority process (load said process to the user)
+    highestPriority_proc->state = RUNNING; //cs153_lab2: set the highest priority process' state to RUNNING
+    highestPriority_proc->burstTime = ticks; //cs153_lab2: set the highest priority process' burst time to number of cpu ticks (proc start running time)
 
-    swtch(&(c->scheduler), highestPriority_proc->context);
-    switchkvm();
+    swtch(&(c->scheduler), highestPriority_proc->context); //context switch to the highest priority process
+    switchkvm(); //the kernel loads its memory
 
     // Process is done running for now.
     // It should have changed its p->state before coming back.
     c->proc = 0;
+    highestPriority_proc->burstTime = ticks - highestPriority_proc->burstTime; //cs153_lab2: compute the highest priority process' burst time (T_finish - T_start)
 
     release(&ptable.lock);
 
