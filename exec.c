@@ -99,6 +99,7 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
+  curproc->turnTime = ticks; //cs153_lab2: set process turn time to # of cpu ticks
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;
