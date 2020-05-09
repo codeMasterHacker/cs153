@@ -203,9 +203,7 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
-
   np->prior_val = curproc->prior_val; //cs153_lab2: not parent (child) inherits parent's (current process) priority value
-
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -321,6 +319,7 @@ void exitStatus(int status)
   }
 
   //Jump into the scheduler, never to return
+  curproc->turnTime = ticks - curproc->turnTime; //cs153_lab2: compute process' turn time (T_finish - T_start)
   curproc->state = ZOMBIE;
   sched();
   panic("zombie exit");
