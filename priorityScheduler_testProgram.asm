@@ -130,7 +130,7 @@ int PScheduler(void)
  110:	8d 58 1e             	lea    0x1e(%eax),%ebx
  113:	89 1c 24             	mov    %ebx,(%esp)
  116:	e8 27 03 00 00       	call   442 <setPrior>
- 11b:	ba 50 c3 00 00       	mov    $0xc350,%edx
+ 11b:	ba 88 13 00 00       	mov    $0x1388,%edx
     	for (i = 0; i < 2; i++)
  120:	b8 e8 03 00 00       	mov    $0x3e8,%eax
  125:	8d 76 00             	lea    0x0(%esi),%esi
@@ -139,7 +139,7 @@ int PScheduler(void)
 				for(k=0;k<1000;k++) 
  129:	83 e8 01             	sub    $0x1,%eax
  12c:	75 fa                	jne    128 <PScheduler+0xf8>
-			for (j=0;j<50000;j++)
+			for (j=0;j<5000;j++)
  12e:	83 ea 01             	sub    $0x1,%edx
  131:	75 ed                	jne    120 <PScheduler+0xf0>
 			printf(1, "\n child# %d with priority %d has finished! \n",getpid(),30-15*i);
