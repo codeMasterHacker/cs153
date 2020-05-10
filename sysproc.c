@@ -140,7 +140,7 @@ sys_setPrior(void)
     int prior_val;
 
     if(argint(0, &prior_val) < 0){
-        exit1(1); //error caught!
+        exitStatus(1); //error caught!
     }
     else
         setPrior(prior_val);
