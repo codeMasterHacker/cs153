@@ -19,16 +19,16 @@ int PScheduler(void)
 	int pid;
   	int i,j,k;
   
-    printf(1, "\n  Step 2: testing the priority scheduler and setpriority(int priority)) systema call:\n");
-    printf(1, "\n  Step 2: Assuming that the priorities range between range between 0 to 31\n");
-    printf(1, "\n  Step 2: 0 is the highest priority. All processes have a default priority of 15\n");
-    printf(1, "\n  Step 2: The parent processes will switch to priority 0\n");
+    	printf(1, "\n  Step 2: testing the priority scheduler and setpriority(int priority)) systema call:\n");
+    	printf(1, "\n  Step 2: Assuming that the priorities range between range between 0 to 31\n");
+    	printf(1, "\n  Step 2: 0 is the highest priority. All processes have a default priority of 15\n");
+    	printf(1, "\n  Step 2: The parent processes will switch to priority 0\n");
     	
 	setPrior(0);
 
-    for (i = 0; i < 2; i++)
+    	for (i = 0; i < 2; i++)
 	{
-        pid = fork();
+        	pid = fork();
 
 		if (pid > 0 ) 
 			continue;
@@ -44,18 +44,15 @@ int PScheduler(void)
 
 			printf(1, "\n child# %d with priority %d has finished! \n",getpid(),30-15*i);
 			exit();
-        }
+        	}
 		else
-		{
 			printf(2," \n Error \n");
-			
-        }
 	}
 
 	if(pid > 0) 
 	{
 		for (i = 0; i <  2; i++)
-            waitStatus(0);
+            		waitStatus(0);
 
 		printf(1,"\n if processes with highest priority finished first then its correct \n");
 	}
