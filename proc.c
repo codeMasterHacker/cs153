@@ -89,7 +89,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  p->prior_val = 0; //cs153_lab2: initialize process' priority value to zero (highest priority)
+  p->prior_val = 15; //cs153_lab2: initialize process' priority value to 15 (middle priority)
   p->turnTime = 0; //cs153_lab2: initialize process' turn time to zero
   p->waitTime = 0; //cs153_lab2: initialize process' wait time to zero
   p->burstTime = 0; //cs153_lab2: initialize process' burst time to zero
