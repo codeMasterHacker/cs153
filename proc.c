@@ -535,8 +535,11 @@ scheduler(void)
     // Loop over process table looking for the process with the highest priority
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
+      if (p->state != RUNNABLE)
+        continue;
+
       //cs153_lab2: if the priority of p is less than or equal to (to make highestPriority_proc piont to the first process) the current highest priority
-      if (p->prior_val <= highestPriority)
+      if (p->prior_val <= highestPriority && )
       {
         highestPriority = p->prior_val; //cs153_lab2: update the current highest priority to p's priority
         highestPriority_proc = p; //cs153_lab2: p is currently the process with the highest priority
