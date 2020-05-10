@@ -183,7 +183,6 @@ UPROGS=\
 	_zombie\
 	_test\
 	_waitpid\
-	_priorityScheduler_testProgram\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
