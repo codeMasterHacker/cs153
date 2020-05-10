@@ -6,7 +6,7 @@ void process(int value);
 
 int main(int argc, char *argv[])
 {
-    setPrior(5); // set a priority value
+    setPrior(25); // set a priority value
     int i, k;
     const int loop = 1000;
     for (i = 0; i < loop; i++) {
@@ -16,6 +16,6 @@ int main(int argc, char *argv[])
         }
 //        printf(1, "program 0 finished loop %d\n", i);
     }
-    printf(1, "program 0 finished loop %d\n", i);
+    printf(1, "program 2 finished loop %d\n", i);
     exit();
 }
