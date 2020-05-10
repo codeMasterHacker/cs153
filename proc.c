@@ -92,6 +92,7 @@ found:
   p->prior_val = 0; //cs153_lab2: initialize process' priority value to zero (highest priority)
   p->turnTime = 0; //cs153_lab2: initialize process' turn time to zero
   p->waitTime = 0; //cs153_lab2: initialize process' wait time to zero
+  p->burstTime = 0; //cs153_lab2: initialize process' burst time to zero
 
   release(&ptable.lock);
 
