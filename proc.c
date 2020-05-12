@@ -556,6 +556,18 @@ scheduler(void)
           highestPriority_proc = tempProc; //cs153_lab2: set highestPriority_proc piont to the process that currently has the highest priority
       }
 
+      //loop thru all the process and increment highestPriority_proc's prior_val (decrease its priority) and decrement all other process' prior_val (increase their priority)
+      for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
+      {
+        if (tempProc->pid == highestPriority_proc->pid)
+          highestPriority_proc->prior_val++;
+        else
+        {
+          if (tempProc->prior_val > 0)
+            tempProc->prior_val--;
+        }
+      }
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
