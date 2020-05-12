@@ -322,6 +322,10 @@ void exitStatus(int status)
   //Jump into the scheduler, never to return
   curproc->turnTime = ticks - curproc->turnTime; //cs153_lab2: compute process' turn time (T_finish - T_start)
   curproc->waitTime = curproc->turnTime - curproc->burstTime; //cs153_lab2: compute process' wait time (turn around time - burst time)
+  cprintf("PID: %d has exited.\n", curproc->pid);
+  cprintf("Turn time: %d\n", curproc->turnTime); //cs153_lab2: print turn time
+  cprintf("Wait time: %d\n", curproc->waitTime); //cs153_lab2: print wait time
+
   curproc->state = ZOMBIE;
   sched();
   panic("zombie exit");
