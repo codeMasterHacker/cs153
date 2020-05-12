@@ -24,6 +24,6 @@ int main(int argc, char *argv[])
   printf(1, "Turn time: %d\n", getTurnTime());
   printf(1, "Wait time: %d\n", getWaitTime());
 
-  exit();
+  exitStatus(0);
   return 0;
 }

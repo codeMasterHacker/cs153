@@ -521,12 +521,11 @@ int getTurnTime()
 void
 scheduler(void)
 {
+  struct proc* highestPriority_proc = ptable.proc; //cs153_lab2: points the process with the highest priority and is initialized to point to the first process in ptable
   struct proc *p;
+  struct proc* tempProc = 0; //cs153_lab2: temporary process pointer used to interate thru inner for loop to find the process with the highest priority
   struct cpu *c = mycpu();
   c->proc = 0;
-
-  struct proc* highestPriority_proc = 0; //cs153_lab2: points the process with the highest priority (lowest int)  
-  struct proc* tempProc = 0; //cs153_lab2: temporary process used to compare
 
   for(;;)
   {
@@ -535,22 +534,27 @@ scheduler(void)
     
     acquire(&ptable.lock);
 
-    // Loop over process table looking for the process with the highest priority
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    //cs153_lab2: if the last scheduled process (the one with the highest priority) is the last process in the ptable and it's not RUNNABLE (it has finished executing)
+    if (highestPriority_proc == &ptable.proc[NPROC-1] && highestPriority_proc->state != RUNNABLE)
+      highestPriority_proc = ptable.proc; //cs153_lab2: highestPriority_proc points to the first process in the ptable, to simulate "that the last process points to the first"
+   
+    //cs153_lab2: Loop over process table looking for the process with the highest priority, beginning with last scheduled process, which is the process with the highest priority 
+    for(p = highestPriority_proc; p < &ptable.proc[NPROC]; p++)
     {
       if (p->state != RUNNABLE)
         continue;
 
-      highestPriority_proc = p; //cs153_lab2: initiialize highestPriority_proc t to the first runnable process
+      highestPriority_proc = p; //set highestPriority_proc to point to the first runnable process
 
-      //find the process with the highest priority
+      //check to see if there is a process with a higher priority than highestPriority_proc
       for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
       {
         if (tempProc->state != RUNNABLE)
           continue;
 
+        //cs153_lab2: if the priority of tempProc is less than the current highest priority, meaning that tempProc is currently the highest priority process
         if (tempProc->prior_val < highestPriority_proc->prior_val)
-          highestPriority_proc = tempProc; //cs153_lab2: tempProc is currently the process with the highest priority, so set highestPriority_proc to tempProc
+          highestPriority_proc = tempProc; //cs153_lab2: set highestPriority_proc piont to the process that currently has the highest priority
       }
 
       // Switch to chosen process.  It is the process's job
@@ -560,18 +564,19 @@ scheduler(void)
       switchuvm(highestPriority_proc); //cs153_lab2: switch to the highest priority process (load said process to the user)
       highestPriority_proc->state = RUNNING; //cs153_lab2: set the highest priority process' state to RUNNING
       highestPriority_proc->burstTime = ticks; //cs153_lab2: set the highest priority process' burst time to number of cpu ticks (proc start running time)
-
       swtch(&(c->scheduler), highestPriority_proc->context); //context switch to the highest priority process
       switchkvm(); //the kernel loads its memory
 
       // Process is done running for now.
-      // It should have changed its p-state before comming back.
-      c-proc = 0;
-      highestPriority_proc->burstTime = ticks - highestPriority_proc->burstTime; //cs153_lab2: compute the highest priority process' burst time (T_finish - T_start)
+      // It should have changed its p->state before coming back.
+      c->proc = 0;
+
+      //if the highest priority process exited (state == ZOMBIE), then compute burst time. A process that has no finished executing retuns as RUNNABLE. A process never returns as RUNNING
+      if (highestPriority_proc->state == ZOMBIE)
+        highestPriority_proc->burstTime = ticks - highestPriority_proc->burstTime; //cs153_lab2: compute the highest priority process' burst time (T_finish - T_start)
     }
 
     release(&ptable.lock);
-
   }
 }
 
