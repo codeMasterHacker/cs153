@@ -7,46 +7,46 @@ Disassembly of section .text:
 00000000 <main>:
 #include "user.h"
 
-void process(int value);
-
 int main(int argc, char *argv[])
 {
+    setPrior(10); // set a priority value
+
    0:	55                   	push   %ebp
    1:	89 e5                	mov    %esp,%ebp
    3:	83 e4 f0             	and    $0xfffffff0,%esp
    6:	83 ec 10             	sub    $0x10,%esp
-    setPrior(5); // set a priority value
+    int i, j;
    9:	c7 04 24 05 00 00 00 	movl   $0x5,(%esp)
   10:	e8 2d 03 00 00       	call   342 <setPrior>
   15:	ba e8 03 00 00       	mov    $0x3e8,%edx
   1a:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
-    int i, k;
-    const int loop = 1000;
-    for (i = 0; i < loop; i++) {
-        asm("nop"); //in order to prevent the compiler from optimizing the for loop
+    const int loop = 43000;
+
+    for (i = 0; i < loop; i++) 
+    {
   20:	90                   	nop
   21:	b8 e8 03 00 00       	mov    $0x3e8,%eax
   26:	66 90                	xchg   %ax,%ax
-        for (k = 0; k < loop; k++) {
-            asm("nop");
+        asm("nop");
+
   28:	90                   	nop
-        for (k = 0; k < loop; k++) {
+        asm("nop");
   29:	83 e8 01             	sub    $0x1,%eax
   2c:	75 fa                	jne    28 <main+0x28>
-    for (i = 0; i < loop; i++) {
+    for (i = 0; i < loop; i++) 
   2e:	83 ea 01             	sub    $0x1,%edx
   31:	75 ed                	jne    20 <main+0x20>
-        }
-//        printf(1, "program 0 finished loop %d\n", i);
+        for (j = 0; j < loop; j++)
+            asm("nop");
     }
-    printf(1, "program 0 finished loop %d\n", i);
+
   33:	c7 44 24 08 e8 03 00 	movl   $0x3e8,0x8(%esp)
   3a:	00 
   3b:	c7 44 24 04 66 07 00 	movl   $0x766,0x4(%esp)
   42:	00 
   43:	c7 04 24 01 00 00 00 	movl   $0x1,(%esp)
   4a:	e8 b1 03 00 00       	call   400 <printf>
-    exit();
+    printf(1, "Program 0 finished with starting priority: %d\n", getPrior());
   4f:	e8 2e 02 00 00       	call   282 <exit>
   54:	66 90                	xchg   %ax,%ax
   56:	66 90                	xchg   %ax,%ax
