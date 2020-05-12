@@ -4,21 +4,24 @@
 
 int main(int argc, char *argv[])
 {
-    setPrior(10); // set a priority value
+  int i, j;
+  int beginningPriority = 10;
+  const int loop = 43000;
 
-    int i, j;
-    const int loop = 43000;
+  setPrior(beginningPriority); // set a priority value
 
-    for (i = 0; i < loop; i++) 
-    {
-        asm("nop");
+  for (i = 0; i < loop; i++) 
+  {
+    asm("nop");
+    
+    for (j = 0; j < loop; j++)
+      asm("nop");
+  }
 
-        for (j = 0; j < loop; j++)
-            asm("nop");
-    }
+  printf(1, "Program 0 with pid %d ended.\n",  getpid());
+  printf(1, "Beginning priority: %d\n", beginningPriority);
 
-    printf(1, "Program 0 finished with starting priority: %d\n", getPrior());
-
-    exitStatus(0);
-    return 0;
+  exitStatus(0); 
+ 
+  return 0;
 }
