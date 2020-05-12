@@ -5,55 +5,58 @@ _test:     file format elf32-i386
 Disassembly of section .text:
 
 00000000 <main>:
+#include "types.h"
+#include "stat.h"
 #include "user.h"
 
 int main(int argc, char *argv[])
 {
-    setPrior(10); // set a priority value
-
    0:	55                   	push   %ebp
    1:	89 e5                	mov    %esp,%ebp
    3:	83 e4 f0             	and    $0xfffffff0,%esp
    6:	83 ec 10             	sub    $0x10,%esp
-    int i, j;
-   9:	c7 04 24 05 00 00 00 	movl   $0x5,(%esp)
+    setPrior(10); // set a priority value
+   9:	c7 04 24 0a 00 00 00 	movl   $0xa,(%esp)
   10:	e8 2d 03 00 00       	call   342 <setPrior>
-  15:	ba e8 03 00 00       	mov    $0x3e8,%edx
+  15:	ba f8 a7 00 00       	mov    $0xa7f8,%edx
   1a:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
+    int i, j;
     const int loop = 43000;
 
     for (i = 0; i < loop; i++) 
     {
+        asm("nop");
   20:	90                   	nop
-  21:	b8 e8 03 00 00       	mov    $0x3e8,%eax
+  21:	b8 f8 a7 00 00       	mov    $0xa7f8,%eax
   26:	66 90                	xchg   %ax,%ax
-        asm("nop");
 
+        for (j = 0; j < loop; j++)
+            asm("nop");
   28:	90                   	nop
-        asm("nop");
+        for (j = 0; j < loop; j++)
   29:	83 e8 01             	sub    $0x1,%eax
   2c:	75 fa                	jne    28 <main+0x28>
     for (i = 0; i < loop; i++) 
   2e:	83 ea 01             	sub    $0x1,%edx
   31:	75 ed                	jne    20 <main+0x20>
-        for (j = 0; j < loop; j++)
-            asm("nop");
     }
 
-  33:	c7 44 24 08 e8 03 00 	movl   $0x3e8,0x8(%esp)
-  3a:	00 
-  3b:	c7 44 24 04 66 07 00 	movl   $0x766,0x4(%esp)
-  42:	00 
-  43:	c7 04 24 01 00 00 00 	movl   $0x1,(%esp)
-  4a:	e8 b1 03 00 00       	call   400 <printf>
     printf(1, "Program 0 finished with starting priority: %d\n", getPrior());
-  4f:	e8 2e 02 00 00       	call   282 <exit>
-  54:	66 90                	xchg   %ax,%ax
-  56:	66 90                	xchg   %ax,%ax
-  58:	66 90                	xchg   %ax,%ax
-  5a:	66 90                	xchg   %ax,%ax
-  5c:	66 90                	xchg   %ax,%ax
-  5e:	66 90                	xchg   %ax,%ax
+  33:	e8 02 03 00 00       	call   33a <getPrior>
+  38:	c7 44 24 04 68 07 00 	movl   $0x768,0x4(%esp)
+  3f:	00 
+  40:	c7 04 24 01 00 00 00 	movl   $0x1,(%esp)
+  47:	89 44 24 08          	mov    %eax,0x8(%esp)
+  4b:	e8 b0 03 00 00       	call   400 <printf>
+
+    exitStatus(0);
+  50:	c7 04 24 00 00 00 00 	movl   $0x0,(%esp)
+  57:	e8 c6 02 00 00       	call   322 <exitStatus>
+    return 0;
+}
+  5c:	31 c0                	xor    %eax,%eax
+  5e:	c9                   	leave  
+  5f:	c3                   	ret    
 
 00000060 <strcpy>:
 #include "user.h"
@@ -660,7 +663,7 @@ printint(int fd, int xx, int base, int sgn)
  392:	31 d2                	xor    %edx,%edx
  394:	f7 f6                	div    %esi
  396:	8d 4f 01             	lea    0x1(%edi),%ecx
- 399:	0f b6 92 89 07 00 00 	movzbl 0x789(%edx),%edx
+ 399:	0f b6 92 9f 07 00 00 	movzbl 0x79f(%edx),%edx
   }while((x /= base) != 0);
  3a0:	85 c0                	test   %eax,%eax
     buf[i++] = digits[x % base];
@@ -875,7 +878,7 @@ printf(int fd, const char *fmt, ...)
         s = (char*)*ap;
  52f:	8b 38                	mov    (%eax),%edi
           s = "(null)";
- 531:	b8 82 07 00 00       	mov    $0x782,%eax
+ 531:	b8 98 07 00 00       	mov    $0x798,%eax
  536:	85 ff                	test   %edi,%edi
  538:	0f 44 f8             	cmove  %eax,%edi
         while(*s != 0){
@@ -962,7 +965,7 @@ free(void *ap)
 
   bp = (Header*)ap - 1;
   for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
- 5f1:	a1 00 0a 00 00       	mov    0xa00,%eax
+ 5f1:	a1 18 0a 00 00       	mov    0xa18,%eax
 {
  5f6:	89 e5                	mov    %esp,%ebp
  5f8:	57                   	push   %edi
@@ -1016,7 +1019,7 @@ free(void *ap)
     p->s.ptr = bp;
  637:	89 10                	mov    %edx,(%eax)
   freep = p;
- 639:	a3 00 0a 00 00       	mov    %eax,0xa00
+ 639:	a3 18 0a 00 00       	mov    %eax,0xa18
 }
  63e:	5b                   	pop    %ebx
  63f:	5e                   	pop    %esi
@@ -1040,7 +1043,7 @@ free(void *ap)
     p->s.size += bp->s.size;
  65f:	03 4b fc             	add    -0x4(%ebx),%ecx
   freep = p;
- 662:	a3 00 0a 00 00       	mov    %eax,0xa00
+ 662:	a3 18 0a 00 00       	mov    %eax,0xa18
     p->s.size += bp->s.size;
  667:	89 48 04             	mov    %ecx,0x4(%eax)
     p->s.ptr = bp->s.ptr;
@@ -1074,7 +1077,7 @@ malloc(uint nbytes)
   nunits = (nbytes + sizeof(Header) - 1)/sizeof(Header) + 1;
  689:	8b 45 08             	mov    0x8(%ebp),%eax
   if((prevp = freep) == 0){
- 68c:	8b 1d 00 0a 00 00    	mov    0xa00,%ebx
+ 68c:	8b 1d 18 0a 00 00    	mov    0xa18,%ebx
   nunits = (nbytes + sizeof(Header) - 1)/sizeof(Header) + 1;
  692:	8d 48 07             	lea    0x7(%eax),%ecx
  695:	c1 e9 03             	shr    $0x3,%ecx
@@ -1112,7 +1115,7 @@ malloc(uint nbytes)
       return (void*)(p + 1);
     }
     if(p == freep)
- 6cb:	3b 15 00 0a 00 00    	cmp    0xa00,%edx
+ 6cb:	3b 15 18 0a 00 00    	cmp    0xa18,%edx
  6d1:	75 ed                	jne    6c0 <malloc+0x40>
   if(nu < 4096)
  6d3:	8b 45 e4             	mov    -0x1c(%ebp),%eax
@@ -1133,7 +1136,7 @@ malloc(uint nbytes)
  6fa:	89 04 24             	mov    %eax,(%esp)
  6fd:	e8 ee fe ff ff       	call   5f0 <free>
   return freep;
- 702:	8b 15 00 0a 00 00    	mov    0xa00,%edx
+ 702:	8b 15 18 0a 00 00    	mov    0xa18,%edx
       if((p = morecore(nunits)) == 0)
  708:	85 d2                	test   %edx,%edx
  70a:	75 b4                	jne    6c0 <malloc+0x40>
@@ -1155,7 +1158,7 @@ malloc(uint nbytes)
         p->s.size = nunits;
  724:	89 70 04             	mov    %esi,0x4(%eax)
       freep = prevp;
- 727:	89 15 00 0a 00 00    	mov    %edx,0xa00
+ 727:	89 15 18 0a 00 00    	mov    %edx,0xa18
       return (void*)(p + 1);
  72d:	83 c0 08             	add    $0x8,%eax
   }
@@ -1171,14 +1174,14 @@ malloc(uint nbytes)
  73a:	89 0a                	mov    %ecx,(%edx)
  73c:	eb e9                	jmp    727 <malloc+0xa7>
     base.s.ptr = freep = prevp = &base;
- 73e:	c7 05 00 0a 00 00 04 	movl   $0xa04,0xa00
+ 73e:	c7 05 18 0a 00 00 1c 	movl   $0xa1c,0xa18
  745:	0a 00 00 
     base.s.size = 0;
- 748:	ba 04 0a 00 00       	mov    $0xa04,%edx
+ 748:	ba 1c 0a 00 00       	mov    $0xa1c,%edx
     base.s.ptr = freep = prevp = &base;
- 74d:	c7 05 04 0a 00 00 04 	movl   $0xa04,0xa04
+ 74d:	c7 05 1c 0a 00 00 1c 	movl   $0xa1c,0xa1c
  754:	0a 00 00 
     base.s.size = 0;
- 757:	c7 05 08 0a 00 00 00 	movl   $0x0,0xa08
+ 757:	c7 05 20 0a 00 00 00 	movl   $0x0,0xa20
  75e:	00 00 00 
  761:	e9 46 ff ff ff       	jmp    6ac <malloc+0x2c>
