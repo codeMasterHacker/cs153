@@ -323,7 +323,8 @@ void exitStatus(int status)
   curproc->turnTime = ticks - curproc->turnTime; //cs153_lab2: compute process' turn time (T_finish - T_start)
   curproc->waitTime = curproc->turnTime - curproc->burstTime; //cs153_lab2: compute process' wait time (turn around time - burst time)
 
-  cprintf("PID: %d has exited.\n", curproc->pid);
+  cprintf("PID: %d has exited.\n", curproc->pid); //cs153_lab2: print pid
+  cprintf("Ending priority: %d\n", curproc->prior_val); //cs153_lab2: print ending priority
   cprintf("Turn time: %d\n", curproc->turnTime); //cs153_lab2: print turn time
   cprintf("Wait time: %d\n", curproc->waitTime); //cs153_lab2: print wait time
   cprintf("Burst time: %d\n", curproc->burstTime); //cs153_lab2: print burst time
