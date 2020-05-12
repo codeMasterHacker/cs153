@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
   int i, j;
   int beginningPriority = 10;
-  const int loop = 1000;
+  const int loop = 43000;
 
   setPrior(beginningPriority); // set a priority value
 
@@ -20,9 +20,6 @@ int main(int argc, char *argv[])
 
   printf(1, "Program 0 with pid %d ended.\n",  getpid());
   printf(1, "Beginning priority: %d\n", beginningPriority);
-  printf(1, "Ending priority: %d\n", getPrior());
-  printf(1, "Turn time: %d\n", getTurnTime());
-  printf(1, "Wait time: %d\n", getWaitTime());
 
   exitStatus(0); 
  
