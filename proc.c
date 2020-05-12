@@ -326,6 +326,7 @@ void exitStatus(int status)
   cprintf("PID: %d has exited.\n", curproc->pid);
   cprintf("Turn time: %d\n", curproc->turnTime); //cs153_lab2: print turn time
   cprintf("Wait time: %d\n", curproc->waitTime); //cs153_lab2: print wait time
+  cprintf("Burst time: %d\n", curproc->burstTime); //cs153_lab2: print burst time
 
   curproc->state = ZOMBIE;
   sched();
