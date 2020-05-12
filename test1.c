@@ -2,20 +2,23 @@
 #include "stat.h"
 #include "user.h"
 
-void process(int value);
-
 int main(int argc, char *argv[])
 {
-    setPrior(15); // set a priority value
-    int i, k;
-    const int loop = 1000;
-    for (i = 0; i < loop; i++) {
-        asm("nop"); //in order to prevent the compiler from optimizing the for loop
-        for (k = 0; k < loop; k++) {
+    setPrior(20); // set a priority value
+
+    int i, j;
+    const int loop = 43000;
+
+    for (i = 0; i < loop; i++) 
+    {
+        asm("nop"); 
+
+        for (j = 0; j < loop; j++)
             asm("nop");
-        }
-//        printf(1, "program 0 finished loop %d\n", i);
     }
-    printf(1, "program 1 finished loop %d\n", i);
-    exit();
+
+    printf(1, "Program 1 finished with starting priority: %d\n", getPrior());
+
+    exitStatus(0);
+    return 0;
 }
