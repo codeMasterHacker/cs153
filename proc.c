@@ -539,12 +539,19 @@ scheduler(void)
 
     //cs153_lab2: Loop over process table looking for a RUNNABLE process
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    {
-      if (p->state != RUNNABLE)
-        continue;
 
-      highestPriority_proc = p; //set highestPriority_proc to point to the first runnable process
+        //lab2 if state is RUNNABLE then we increase it's priority
+      if (p->state != RUNNABLE){
+          p->prior_val--;
+          continue;
+      }
+      //set highestPriority_proc to point to the first runnable process
+      highestPriority_proc = p;
 
+      //else we decrease the priority to implement aging
+      if(p->prior_val < 31) {
+          p->prior_val++;
+      }
       //check to see if there is a process with a higher priority than highestPriority_proc
       for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
       {
@@ -556,17 +563,6 @@ scheduler(void)
           highestPriority_proc = tempProc; //cs153_lab2: set highestPriority_proc piont to the process that currently has the highest priority
       }
 
-      //loop thru all the process and increment highestPriority_proc's prior_val (decrease its priority) and decrement all other process' prior_val (increase their priority)
-      for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
-      {
-        if (tempProc->pid == highestPriority_proc->pid)
-          highestPriority_proc->prior_val++;
-        else
-        {
-          if (tempProc->prior_val > 0)
-            tempProc->prior_val--;
-        }
-      }
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it

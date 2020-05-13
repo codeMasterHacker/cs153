@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
   int beginningPriority = 20;
   const int loop = 43000;
 
-  setPrior(beginningPriority); // set a priority value
+  setPrior(beginningPriority); // set a priority values
 
   for (i = 0; i < loop; i++)
   {
