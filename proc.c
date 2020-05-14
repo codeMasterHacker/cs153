@@ -530,59 +530,62 @@ scheduler(void)
   
   int burstTime = 0; //cs153_lab2: used to hold the difference between ticks (# of ticks after swtch - # of ticks before swtch)
 
-  for(;;)
-  {
-    // Enable interrupts on this processor.
-    sti();
-    
-    acquire(&ptable.lock);
+  for(;;) {
+      // Enable interrupts on this processor.
+      sti();
 
-    //cs153_lab2: Loop over process table looking for a RUNNABLE process
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+      acquire(&ptable.lock);
 
-        //lab2 if state is RUNNABLE then we increase it's priority
-      if (p->state != RUNNABLE){
-          p->prior_val--;
-          continue;
-      }
-      //set highestPriority_proc to point to the first runnable process
-      highestPriority_proc = p;
-
-      //else we decrease the priority to implement aging
-      if(p->prior_val < 31) {
-          p->prior_val++;
-      }
-      //check to see if there is a process with a higher priority than highestPriority_proc
-      for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
+      //cs153_lab2: Loop over process table looking for a RUNNABLE process
+      for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
       {
-        if (tempProc->state != RUNNABLE)
-          continue;
 
-        //cs153_lab2: if the priority of tempProc is less than the current highest priority, meaning that tempProc is currently the highest priority process
-        if (tempProc->prior_val < highestPriority_proc->prior_val)
-          highestPriority_proc = tempProc; //cs153_lab2: set highestPriority_proc piont to the process that currently has the highest priority
+          //lab2 if state is RUNNABLE then we increase it's priority
+          if (p->state != RUNNABLE)
+          {
+              p->prior_val--;
+              continue;
+          }
+          //set highestPriority_proc to point to the first runnable process
+          highestPriority_proc = p;
+
+          //else we decrease the priority to implement aging
+          if (p->prior_val < 31)
+          {
+              p->prior_val++;
+          }
+          //check to see if there is a process with a higher priority than highestPriority_proc
+          for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
+          {
+              if (tempProc->state != RUNNABLE)
+                  continue;
+
+              //cs153_lab2: if the priority of tempProc is less than the current highest priority, meaning that tempProc is currently the highest priority process
+              if (tempProc->prior_val < highestPriority_proc->prior_val)
+                  highestPriority_proc = tempProc; //cs153_lab2: set highestPriority_proc piont to the process that currently has the highest priority
+          }
+
+
+          // Switch to chosen process.  It is the process's job
+          // to release ptable.lock and then reacquire it
+          // before jumping back to us.
+          c->proc = highestPriority_proc; //cs153_lab2: set cpu process to the highest priority process
+          switchuvm(
+                  highestPriority_proc); //cs153_lab2: switch to the highest priority process (load said process to the user)
+          highestPriority_proc->state = RUNNING; //cs153_lab2: set the highest priority process' state to RUNNING
+
+          burstTime = ticks; //cs153_lab2: get # of ticks before swtch() to get time before execution
+          swtch(&(c->scheduler), highestPriority_proc->context); //context switch to the highest priority process
+          switchkvm(); //the kernel loads its memory
+
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+          burstTime = ticks -
+                      burstTime; //cs153_lab2: get # of ticks after swtch() to get time after execution for this time quantum
+          highestPriority_proc->burstTime += burstTime; //cs153_lab2: add the execution time to the total bust time of the process for all time quanta
       }
-
-
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = highestPriority_proc; //cs153_lab2: set cpu process to the highest priority process
-      switchuvm(highestPriority_proc); //cs153_lab2: switch to the highest priority process (load said process to the user)
-      highestPriority_proc->state = RUNNING; //cs153_lab2: set the highest priority process' state to RUNNING
-      
-      burstTime = ticks; //cs153_lab2: get # of ticks before swtch() to get time before execution
-      swtch(&(c->scheduler), highestPriority_proc->context); //context switch to the highest priority process
-      switchkvm(); //the kernel loads its memory
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
-      burstTime = ticks - burstTime; //cs153_lab2: get # of ticks after swtch() to get time after execution for this time quantum
-      highestPriority_proc->burstTime += burstTime; //cs153_lab2: add the execution time to the total bust time of the process for all time quanta
-    }
-
-    release(&ptable.lock);
+      release(&ptable.lock);
   }
 }
 
