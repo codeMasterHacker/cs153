@@ -7,6 +7,28 @@
 #include "mmu.h"
 #include "proc.h"
 
+int sys_shm_open(void) {
+  int id;
+  char **pointer;
+
+  if(argint(0, &id) < 0)
+    return -1;
+
+  if(argptr(1, (char **) (&pointer),4)<0)
+    return -1;
+  return shm_open(id, pointer);
+}
+
+int sys_shm_close(void) {
+  int id;
+
+  if(argint(0, &id) < 0)
+    return -1;
+
+  
+  return shm_close(id);
+}
+
 int
 sys_fork(void)
 {
@@ -20,47 +42,10 @@ sys_exit(void)
   return 0;  // not reached
 }
 
-int sys_exitStatus(void) //cs153_lab1: exitStatus
-{
-	int arg;
-
-	if (argint(0, &arg) < 0)
-		exitStatus(1); //didn't receive an argument, so I'm forcefully sending a one
-	else
-		exitStatus(arg);
-
-	return 0; //not reached
-}
-
 int
 sys_wait(void)
 {
   return wait();
-}
-
-int sys_waitStatus(void) //cs153_lab1: waitStatus
-{
-	int* argPtr;
-
-	if (argptr(0, (void*)&argPtr, sizeof(int)) < 0)
-		return -1;
-	else
-		return waitStatus(argPtr);
-}
-
-int sys_waitpid(void) //cs153_lab1: waitpid
-{
-	int pid, options, argInt1, argInt2, argPtr;
-	int* status;
-
-	argInt1 = argint(0, &pid);
-	argPtr = argptr(1, (void*)&status, sizeof(int));
-	argInt2 = argint(2, &options);
-
-	if (argInt1 < 0 || argPtr < 0 || argInt2 < 0)
-		return -1;
-	else
-		return waitpid(pid, status, options);
 }
 
 int
@@ -125,34 +110,4 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
-}
-
-//---------lab2------------
-int
-sys_getPrior(void)
-{
-    return getPrior();
-}
-int
-sys_setPrior(void)
-{
-    //when passing in a argument we must use argint
-    int prior_val;
-
-    if(argint(0, &prior_val) < 0){
-        exitStatus(1); //error caught!
-    }
-    else
-        setPrior(prior_val);
-    return 0;  // not reached
-}
-int
-sys_getWaitTime(void)
-{
-    return getWaitTime();
-}
-int
-sys_getTurnTime(void)
-{
-    return getTurnTime();
 }

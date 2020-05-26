@@ -57,7 +57,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
-static int
+int
 mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 {
   char *a, *last;
@@ -332,11 +332,26 @@ copyuvm(pde_t *pgdir, uint sz)
     if((mem = kalloc()) == 0)
       goto bad;
     memmove(mem, (char*)P2V(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
-      kfree(mem);
+    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0)
       goto bad;
-    }
   }
+
+  //lab3 userstack
+
+    for (i = myproc()->userStackTop - myproc()->stackPages*PGSIZE + 4; i < myproc()->userStackTop; i += PGSIZE) {
+        if ((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+            panic("copyuvm: pte should exist");
+        if (!(*pte & PTE_P))
+            panic("copyuvm: page not present");
+        pa = PTE_ADDR(*pte);
+        flags = PTE_FLAGS(*pte);
+        if ((mem = kalloc()) == 0)
+            goto bad;
+        memmove(mem, (char *) P2V(pa), PGSIZE);
+        if (mappages(d, (void *) i, PGSIZE, V2P(mem), flags) < 0)
+            goto bad;
+    }
+
   return d;
 
 bad:

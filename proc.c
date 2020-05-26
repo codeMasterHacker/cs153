@@ -89,11 +89,6 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  p->prior_val = 15; //cs153_lab2: initialize process' priority value to 15 (middle priority)
-  p->turnTime = 0; //cs153_lab2: initialize process' turn time to zero
-  p->waitTime = 0; //cs153_lab2: initialize process' wait time to zero
-  p->burstTime = 0; //cs153_lab2: initialize process' burst time to zero
-
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -202,9 +197,10 @@ fork(void)
     return -1;
   }
   np->sz = curproc->sz;
+  np->userStackTop = curproc->userStackTop; //lab3
   np->parent = curproc;
   *np->tf = *curproc->tf;
-  np->prior_val = curproc->prior_val; //cs153_lab2: not parent (child) inherits parent's (current process) priority value
+
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -272,67 +268,6 @@ exit(void)
   panic("zombie exit");
 }
 
-/*cs153_lab1
- *The exit system call must act as previously defined (i.e., terminate the current process) 
-  but it must also store the exit status of the terminated process in the corresponding structure
- */
-void exitStatus(int status) 
-{
-  struct proc *curproc = myproc();
-  struct proc *p;
-  int fd;
-
-  curproc->exitStatus = status; //cs153_lab1: sets the process' exit status to status
-
-  if (curproc == initproc)
-    panic("init exiting");
-
-  //Close all open files
-  for (fd = 0; fd < NOFILE; fd++)
-  {
-    if (curproc->ofile[fd])
-    {
-      fileclose(curproc->ofile[fd]);
-      curproc->ofile[fd] = 0;
-    }
-  }
-
-  begin_op();
-  iput(curproc->cwd);
-  end_op();
-  curproc->cwd = 0;
-
-  acquire(&ptable.lock);
-
-  //Parent might be sleeping in wait()
-  wakeup1(curproc->parent);
-
-  //Pass abandoned children to int
-  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-  {
-    if (p->parent == curproc)
-    {
-      p->parent = initproc;
-
-      if (p->state == ZOMBIE)
-        wakeup1(initproc);
-    }
-  }
-
-  //Jump into the scheduler, never to return
-  curproc->turnTime = ticks - curproc->turnTime; //cs153_lab2: compute process' turn time (T_finish - T_start)
-  curproc->waitTime = curproc->turnTime - curproc->burstTime; //cs153_lab2: compute process' wait time (turn around time - burst time)
-  cprintf("PID: %d has exited.\n", curproc->pid); //cs153_lab2: print pid
-  cprintf("Ending priority: %d\n", curproc->prior_val); //cs153_lab2: print ending priority
-  cprintf("Turn time: %d\n", curproc->turnTime); //cs153_lab2: print turn time
-  cprintf("Wait time: %d\n", curproc->waitTime); //cs153_lab2: print wait time
-  cprintf("Burst time: %d\n", curproc->burstTime); //cs153_lab2: print burst time
-
-  curproc->state = ZOMBIE;
-  sched();
-  panic("zombie exit");
-}
-
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
@@ -377,140 +312,6 @@ wait(void)
   }
 }
 
-/*cs153_lab1
- *Must prevent the current process from execution until any of its child processes is terminated (if any exists) 
-  and return the terminated child exit status through the status argument. 
-  The system call must return the process id of the child that was terminated or -1 if no child exists (or if an error)
- */
-int waitStatus(int* status)
-{
-  struct proc *p;
-  int havekids, pid;
-  struct proc *curproc = myproc();
-
-  acquire(&ptable.lock);
-
-  for (;;)
-  {
-    havekids = 0;
-
-    //Scan through table looking for exited children
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    {
-      if(p->parent != curproc)
-        continue;
-
-      havekids = 1;
-      if(p->state == ZOMBIE) //Found one
-      {
-        pid = p->pid;
-        kfree(p->kstack);
-        p->kstack = 0;
-        freevm(p->pgdir);
-        p->pid = 0;
-        p->parent = 0;
-        p->name[0] = 0;
-        p->killed = 0;
-        p->state = UNUSED;
-
-        if (status != 0)
-          *status = p->exitStatus; //cs153_lab1: return the terminated child exit status through the status argument
-
-        release(&ptable.lock);
-        return pid;
-      }
-    }
-
-    //No point waiting if we don't have any children
-    if(!havekids || curproc->killed)
-    {
-      release(&ptable.lock);
-      return -1;
-    }
-
-    //Wait for children to exit.  (See wakeup1 call in proc_exit.)
-    sleep(curproc, &ptable.lock);  //DOC: wait-sleep
-  }
-}
-
-/*cs153_lab1
- * This system call must act like wait system call with the following additional properties: 
- * The system call must wait for a process (not necessary a child process) with a pid that equals to one provided by the pid argument. 
- * The return value must be the process id of the process that was terminated or -1 if this process does not exist or if an unexpected error occurred
- */
-int waitpid(int pid, int* status, int options)
-{
-  struct proc* p;
-  struct proc* curproc = myproc();
-  int processExists, processID;
-
-  acquire(&ptable.lock);
-
-  for (;;)
-  {
-    processExists = 0;
-
-    //Scan through process table looking for the process specified by pid
-    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    {
-      if (p->pid != pid)
-        continue;
-
-      processExists = 1;
-
-      if (p->state == ZOMBIE) //process exited
-      {
-        processID = p->pid;
-        kfree(p->kstack);
-        p->kstack = 0;
-        freevm(p->pgdir);
-        p->pid = 0;
-        p->parent = 0;
-        p->name[0] = 0;
-        p->killed = 0;
-        p->state = UNUSED;
-
-        if (status != 0)
-          *status = p->exitStatus;
-
-        release(&ptable.lock);
-        return processID;
-      }
-    }
-
-    //No point in waiting if we don't have the process we want
-    if (!processExists || curproc->killed)
-    {
-      release(&ptable.lock);
-      return -1;
-    }
-
-    //Wait for proccess that we want to exit (See wakeup1 call in proc_exit.)
-    sleep(curproc, &ptable.lock); //DOC: wait-sleep
-  }
-}
-//--------------lab2 Start-------------------
-int getPrior(void)
-{
-    return myproc()->prior_val;
-}
-
-void setPrior(int prior_val)
-{
-    myproc()->prior_val = prior_val;
-    yield(); //give up CPU once priority value changes
-}
-
-int getWaitTime()
-{
-    return myproc()->waitTime;
-}
-
-int getTurnTime()
-{
-    return myproc()->turnTime;
-}
-//--------------lab2 End-------------------
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -522,70 +323,36 @@ int getTurnTime()
 void
 scheduler(void)
 {
-  struct proc* highestPriority_proc = 0; //cs153_lab2: points the process with the highest priority
-  struct proc* tempProc = 0; //cs153_lab2: temporary process pointer used to interate thru inner for loop to find the process with the highest priority
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
   
-  int burstTime = 0; //cs153_lab2: used to hold the difference between ticks (# of ticks after swtch - # of ticks before swtch)
+  for(;;){
+    // Enable interrupts on this processor.
+    sti();
 
-  for(;;) {
-      // Enable interrupts on this processor.
-      sti();
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
 
-      acquire(&ptable.lock);
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
 
-      //cs153_lab2: Loop over process table looking for a RUNNABLE process
-      for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-      {
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
 
-          //lab2 if state is RUNNABLE then we increase it's priority
-          if (p->state != RUNNABLE)
-          {
-              p->prior_val--;
-              continue;
-          }
-          //set highestPriority_proc to point to the first runnable process
-          highestPriority_proc = p;
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      c->proc = 0;
+    }
+    release(&ptable.lock);
 
-          //else we decrease the priority to implement aging
-          if (p->prior_val < 31)
-          {
-              p->prior_val++;
-          }
-          //check to see if there is a process with a higher priority than highestPriority_proc
-          for (tempProc = ptable.proc; tempProc < &ptable.proc[NPROC]; tempProc++)
-          {
-              if (tempProc->state != RUNNABLE)
-                  continue;
-
-              //cs153_lab2: if the priority of tempProc is less than the current highest priority, meaning that tempProc is currently the highest priority process
-              if (tempProc->prior_val < highestPriority_proc->prior_val)
-                  highestPriority_proc = tempProc; //cs153_lab2: set highestPriority_proc piont to the process that currently has the highest priority
-          }
-
-
-          // Switch to chosen process.  It is the process's job
-          // to release ptable.lock and then reacquire it
-          // before jumping back to us.
-          c->proc = highestPriority_proc; //cs153_lab2: set cpu process to the highest priority process
-          switchuvm(
-                  highestPriority_proc); //cs153_lab2: switch to the highest priority process (load said process to the user)
-          highestPriority_proc->state = RUNNING; //cs153_lab2: set the highest priority process' state to RUNNING
-
-          burstTime = ticks; //cs153_lab2: get # of ticks before swtch() to get time before execution
-          swtch(&(c->scheduler), highestPriority_proc->context); //context switch to the highest priority process
-          switchkvm(); //the kernel loads its memory
-
-          // Process is done running for now.
-          // It should have changed its p->state before coming back.
-          c->proc = 0;
-          burstTime = ticks -
-                      burstTime; //cs153_lab2: get # of ticks after swtch() to get time after execution for this time quantum
-          highestPriority_proc->burstTime += burstTime; //cs153_lab2: add the execution time to the total bust time of the process for all time quanta
-      }
-      release(&ptable.lock);
   }
 }
 

@@ -18,9 +18,11 @@ int
 fetchint(uint addr, int *ip)
 {
   struct proc *curproc = myproc();
-
-  if(addr >= curproc->sz || addr+4 > curproc->sz)
-    return -1;
+  cprintf("HELP fecthint \n");
+  cprintf("sz: %d\n", curproc->sz);
+  cprintf("addr: %d\n", addr);
+//  if(addr >= curproc->sz || addr+4 > curproc->sz || addr <= curproc->userStackTop || addr-4 < curproc->userStackTop)
+//    return -1;
   *ip = *(int*)(addr);
   return 0;
 }
@@ -32,16 +34,23 @@ int
 fetchstr(uint addr, char **pp)
 {
   char *s, *ep;
-  struct proc *curproc = myproc();
+//  struct proc *curproc = myproc();
+  cprintf("HELP fecthstr \n");
 
-  if(addr >= curproc->sz)
-    return -1;
+//  if(addr >= curproc->sz || addr <= curproc->userStackTop)
+//    return -1;
   *pp = (char*)addr;
-  ep = (char*)curproc->sz;
+//  ep = (char*)curproc->sz;
+//lab3
+  ep = (char*)(KERNBASE-4);
+  cprintf("ep: %d\n", ep);
+  cprintf("pp: %d\n", *pp);
+  cprintf("HELP fecthstr below ep call \n");
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
   }
+    cprintf("HELP fecthstr return -1 \n");
   return -1;
 }
 
@@ -59,11 +68,13 @@ int
 argptr(int n, char **pp, int size)
 {
   int i;
-  struct proc *curproc = myproc();
- 
+//  struct proc *curproc = myproc();
+  cprintf("HELP argptr \n");
   if(argint(n, &i) < 0)
     return -1;
-  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
+
+//  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz || (uint)i <= curproc->userStackTop || (uint)i-size < curproc->userStackTop)
+  if(size < 0)
     return -1;
   *pp = (char*)i;
   return 0;
@@ -103,13 +114,9 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
-extern int sys_exitStatus(void);  //cs153_lab1
-extern int sys_waitStatus(void);  //cs153_lab1
-extern int sys_waitpid(void);     //cs153_lab1
-extern int sys_getPrior(void);    //lab2
-extern int sys_setPrior(void);    //lab2
-extern int sys_getWaitTime(void); //lab2
-extern int sys_getTurnTime(void); //lab2
+
+extern int sys_shm_open(void);
+extern int sys_shm_close(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -133,13 +140,8 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_exitStatus] sys_exitStatus,    /*cs153_lab1*/
-[SYS_waitStatus] sys_waitStatus,    /*cs153_lab1*/
-[SYS_waitpid]	 sys_waitpid,	        /*cs153_lab1*/
-[SYS_getPrior]  sys_getPrior,       //lab2
-[SYS_setPrior]  sys_setPrior,       //lab2
-[SYS_getWaitTime] sys_getWaitTime,  //lab2
-[SYS_getTurnTime] sys_getTurnTime,  //lab2
+[SYS_shm_open] sys_shm_open,
+[SYS_shm_close] sys_shm_close
 };
 
 void

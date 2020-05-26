@@ -29,10 +29,5 @@ SYSCALL(getpid)
 SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
-SYSCALL(exitStatus)   //cs153_lab1
-SYSCALL(waitStatus)   //cs153_lab1
-SYSCALL(waitpid)      //cs153_lab1
-SYSCALL(getPrior)     //add lab2
-SYSCALL(setPrior)     //add lab2
-SYSCALL(getWaitTime)  //add lab2
-SYSCALL(getTurnTime)  //add lab2
+SYSCALL(shm_open)
+SYSCALL(shm_close)	

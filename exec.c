@@ -60,13 +60,35 @@ exec(char *path, char **argv)
   end_op();
   ip = 0;
 
+  //lab3
+  uint kernelBase = KERNBASE-4;
+//  cprintf("%d \n", kernelBase);
+//  cprintf("%d \n", PGROUNDDOWN(KERNBASE-1));
+//  cprintf("%d \n", KERNBASE-4);
+uint newSize = kernelBase;
+uint oldSize = kernelBase - PGSIZE;
+
+  //creates the guardPage buffer
+  if((sz = allocuvm(pgdir, sz, sz + PGSIZE)) == 0)
+      goto bad;
+  clearpteu(pgdir, (char*)(sz - PGSIZE));
+
+  sz = PGROUNDUP(sz);
+  if ((allocuvm(pgdir, oldSize, newSize)) == 0)
+      goto bad;
+
+  //pointer right under the KernalBase - 4
+  sp = newSize;
+  //created fist page in the userStack
+  curproc->stackPages = 1;
+
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
-  sz = PGROUNDUP(sz);
-  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
-    goto bad;
-  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
-  sp = sz;
+//  sz = PGROUNDUP(sz);
+//  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
+//    goto bad;
+//  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
+//  sp = sz;
 
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
@@ -97,9 +119,9 @@ exec(char *path, char **argv)
   oldpgdir = curproc->pgdir;
   curproc->pgdir = pgdir;
   curproc->sz = sz;
+  curproc->userStackTop = sp;     //lab3
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
-  curproc->turnTime = ticks; //cs153_lab2: set process turn time to # of cpu ticks
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;

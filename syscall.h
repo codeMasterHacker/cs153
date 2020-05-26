@@ -20,10 +20,5 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
-#define SYS_exitStatus 22   //cs153_lab1
-#define SYS_waitStatus 23   //cs153_lab1
-#define SYS_waitpid 24      //cs153_lab1
-#define SYS_getPrior 26     //lab2
-#define SYS_setPrior 27     //lab2
-#define SYS_getWaitTime 28  //lab2
-#define SYS_getTurnTime 29  //lab2
+#define SYS_shm_open 22
+#define SYS_shm_close 23
